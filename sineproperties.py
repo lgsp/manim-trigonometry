@@ -40,58 +40,79 @@ class SinusProperties(Scene):
                 Create(line1), 
                 Create(line2)
                 )
-            self.play(Write(MathTex(formula).to_edge(DOWN)))
+            
+            math_formula = MathTex(formula).to_edge(DOWN)
+            self.play(Write(math_formula))
 
             # Attend un peu
             self.wait(2)
 
-            return point1, point2, line1, line2
+            return point1, point2, line1, line2, math_formula
 
 
         def generate_sym(angles, num, den, sym, form):
-            for i in range(1, len(angles)):
+            for i in range(len(angles)):
                 angle = angles[i]
-                anglab = r"\frac{" + f"{num[i]}" + r"}{"
-                anglab += f"{den[i]}" + r"}"
+                if i == 0: anglab = r"0"
+                else:
+                    anglab = r"\frac{" + f"{num[i]}" + r"}{"
+                    anglab += f"{den[i]}" + r"}"
                 if sym == r"-": 
-                    symangle = -angle
-                    manglab = r"-" + anglab
+                    if i == 0: 
+                        symangle = 0
+                        manglab = anglab
+                    else:
+                        symangle = -angle
+                        manglab = r"-" + anglab
+                    if i < 2: p1_pos, p2_pos = RIGHT, RIGHT
+                    else: p1_pos, p2_pos = LEFT, LEFT
                 elif sym == r"\pi - x": 
                     symangle = PI - angle
-                    manglab = r"\pi - " + anglab
+                    if i == 0: manglab = r"\pi"
+                    else: manglab = r"\pi - " + anglab
+                    if i < 2: p1_pos, p2_pos = RIGHT, LEFT
+                    else: p1_pos, p2_pos = LEFT, RIGHT
                 else: symangle = 0
-                p1, p2, l1, l2 = show_symmetry(
+                p1, p2, l1, l2, formula = show_symmetry(
                     angle, 
                     symangle, 
                     form
                 )
+                p1_lab = MathTex(anglab).next_to(p1, p1_pos)
+                p2_lab = MathTex(manglab).next_to(p2, p2_pos)
                 self.play(
-                    Write(MathTex(anglab).next_to(p1, RIGHT)),
-                    Write(MathTex(manglab).next_to(p2, RIGHT))
+                    Write(p1_lab),
+                    Write(p2_lab)
                     )
+                self.wait(1.5)
+
+                self.play(
+                    Uncreate(p1),
+                    Uncreate(p2),
+                    Uncreate(l1),
+                    Uncreate(l2),
+                    Unwrite(p1_lab),
+                    Unwrite(p2_lab),
+                    Unwrite(formula)
+                )
                 self.wait()
 
-            self.play(
-                Uncreate(p1),
-                Uncreate(p2),
-                Uncreate(l1),
-                Uncreate(l2)
-            )
-            self.wait()
+
+            
 
         # Phase 1 : Symétrie par rapport à l'axe des abscisses
-        angles = [PI/6, PI/4, PI/3]
-        num = [r"\pi", r"\pi", r"\pi"]
-        den = [6, 4, 3]
+        angles = [0, 2*PI/7, 4*PI/7, 6*PI/7]
+        num = [r"0", r"2\pi", r"4\pi", r"6\pi"]
+        den = [7, 7, 7, 7]
         sym = r"-"
         form = r"\sin(-x) = -\sin(x)"
         generate_sym(angles, num, den, sym, form)
         
 
         # Phase 2 : Symétrie par rapport à la droite d'équation x = 0
-        angles = [PI/6, PI/4, PI/3]
-        num = [r"\pi", r"\pi", r"\pi"]
-        den = [6, 4, 3]
+        angles = [0, 2*PI/7, 4*PI/7, 6*PI/7]
+        num = [r"0", r"2\pi", r"4\pi", r"6\pi"]
+        den = [7, 7, 7, 7]
         sym = r"\pi - x"
         form = r"\sin(\pi - x) = \sin(x)"
         generate_sym(angles, num, den, sym, form)
